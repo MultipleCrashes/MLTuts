@@ -3,6 +3,7 @@ from torch import nn
 from torch.autograd import Variable 
 import numpy as np
 import matplotlib.pyplot as plt 
+import time 
 
 class LinearRegressionModel(nn.Module):
     def __init__(self, input_dim, outdim):
@@ -21,6 +22,11 @@ output_dim = 1
 
 model = LinearRegressionModel(input_dim, output_dim)
 
+if torch.cuda.is_available():
+    print('GPU Acceleration {0} and hence using'.format(torch.cuda.is_available()))
+    time.sleep(3)
+    model.cuda()
+
 criterion = nn.MSELoss() # Mean Squared Loss
 l_rate = 0.01 
 optimiser = torch.optim.SGD(model.parameters(), lr=l_rate)
@@ -36,8 +42,12 @@ print('Y train', y_train)
 
 for epoch in range(epochs):
     epoch += 1
-    inputs = Variable(torch.from_numpy(x_train))
-    labels = Variable(torch.from_numpy(y_train))
+    if torch.cuda.is_available():
+        inputs = Variable(torch.from_numpy(x_train).cuda())
+        labels = Variable(torch.from_numpy(y_train).cuda())
+    else:
+        inputs = Variable(torch.from_numpy(x_train))
+        labels = Variable(torch.from_numpy(y_train))
     # clear grads as discussed in prev post
     optimiser.zero_grad()
 
